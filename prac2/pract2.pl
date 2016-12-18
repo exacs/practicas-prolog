@@ -1,13 +1,12 @@
 :- module(pract2, [lista_de_moves/2,
         lista_de_swaps/2,
         hacer_move/3,
-        hacer_swap/4]).
+        hacer_swap/4,
+        generar_estados_siguientes/3]).
 
 alumno_prode('Sabina', 'Hidalgo', 'Irene', 'v130321').
 alumno_prode('Saito', 'Murata', 'Carlos', 'v130215').
 alumno_prode('Vargas', 'Azpitarte', 'Daniel', 'v130290').
-
-% generador_de_codigo(regs(1,2,3,4), lista(2,2,2,2,5)
 
 %generador_de_codigo(Estado_Inicial, Estado_Inicial, []).
 %generador_de_codigo(Estado_Inicial, Estado_Final, Lista_Instrucciones) :-
@@ -20,7 +19,25 @@ alumno_prode('Vargas', 'Azpitarte', 'Daniel', 'v130290').
 %         generar_estados_siguientes(Estado_Inicial, Lista_Pasos, Estados_Siguientes).
         %
 
+% Devuelve una lista de todos los caminos(paso, estado) siguientes
+generar_estados_siguientes(_, [], []).
+generar_estados_siguientes(Estado_Inicial, [Paso|Pasos], [Siguiente|Siguientes]) :-
+        aplicar_paso(Estado_Inicial, Paso, Estado_Siguiente),
+        Siguiente = camino([Paso], Estado_Siguiente),
+        generar_estados_siguientes(Estado_Inicial, Pasos, Siguientes),
+        !.
 
+% Aplica un paso (hacer_move o hacer_swap)
+aplicar_paso(Estado_Inicial, move(N), Estado_Final) :-
+        hacer_move(Estado_Inicial, N, Estado_Final).
+aplicar_paso(Estado_Inicial, swap(N,M), Estado_Final) :-
+        hacer_swap(Estado_Inicial, N, M, Estado_Final).
+
+
+% lista_de_moves(N, Lista)
+%
+% Lista es la lista de todas las instrucciones "move" que se pueden realizar
+% sobre N registros
 lista_de_moves(1, [move(1)]).
 lista_de_moves(N, [Move|Lista]) :-
         N > 1,
@@ -28,6 +45,10 @@ lista_de_moves(N, [Move|Lista]) :-
         N1 is N - 1,
         lista_de_moves(N1, Lista).
 
+% lista_de_swaps(N, Lista)
+%
+% "Lista" es la lista de todas las instrucciones "swap(i,j)" que se pueden
+% realizar sobre "N" registros tales que tales que j>i
 lista_de_swaps(2, [swap(2,1)]).
 lista_de_swaps(N, Lista) :-
         N > 2,
@@ -44,7 +65,10 @@ lista_de_subswaps(N, M, [Swap|Lista]) :-
         lista_de_subswaps(N, M1, Lista).
 
 
-% aplicar_paso(regs(1,2,3,4), move(1), Estado_Final)
+% aplicar_paso(Estado_Inicial, Paso, Estado_Final)
+%
+% La transición de Estado_Inicial a Estado_Final se realiza por la instrucción
+% Paso.
 aplicar_paso(Estado_Inicial, move(N), Estado_Final) :-
         hacer_move(Estado_Inicial, N, Estado_Final).
 
@@ -52,7 +76,10 @@ aplicar_paso(Estado_Inicial, swap(N,M), Estado_Final) :-
         hacer_swap(Estado_Inicial, N, M, Estado_Final).
 
 
-% hacer_move(regs(1,2,3,4), 4, regs(4,2,3,4))
+% hacer_move(Estado_Inicial, N, Estado_Final)
+%
+% Estado_Final es el estado al que se llega tras ejecutar la instrucción
+% "move(N)" sobre el Estado_Inicial
 hacer_move(Estado_Inicial, N, Estado_Final) :-
         functor(Estado_Inicial, regs, Numero_Registros),
         functor(Estado_Final, regs, Numero_Registros),
@@ -78,8 +105,6 @@ hacer_move_aux(Estado_Inicial, N, I, Estado_Final) :-
         % avanzar
         I2 is I - 1,
         hacer_move_aux(Estado_Inicial, N, I2, Estado_Final).
-
-% Si N no es el último o I no es 1, entrar
 
 
 hacer_move_aux(Estado_Inicial, N, I, Estado_Final) :-
@@ -140,20 +165,3 @@ hacer_swap_aux(Estado_Inicial, N, M, I, Estado_Final) :-
         arg(I, Estado_Final, X),
         I2 is I - 1,
         hacer_swap_aux(Estado_Inicial, N, M, I2, Estado_Final).
-
-% %
-% lista_de_swaps(1, L)
-% L = []
-%
-% lista_de_swaps(2, L)
-% L = (1,2)
-%
-% lista_de_swaps(3, L)
-% L = (1,2), (1,3), (2,3)
-%
-% lista_de_swaps(4, L)
-% L = (1,2), (1,3), (1,4), (2,3), (2,4), (3,4)
-% L = (4,3), (4,2), (4,1), (3,2), (3,1), (2,1)
-%
-% lista_de_subswaps(4, L)
-% L = (4,3), (4,2), (4,1)
