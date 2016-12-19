@@ -2,7 +2,7 @@
         lista_de_swaps/2,
         hacer_move/3,
         hacer_swap/4,
-        generar_estados_siguientes/4]).
+        generar_estados_siguientes/5]).
 
 alumno_prode('Sabina', 'Hidalgo', 'Irene', 'v130321').
 alumno_prode('Saito', 'Murata', 'Carlos', 'v130215').
@@ -19,21 +19,15 @@ alumno_prode('Vargas', 'Azpitarte', 'Daniel', 'v130290').
 %         generar_estados_siguientes(Estado_Inicial, Lista_Pasos, Estados_Siguientes).
         %
 
-% Devuelve una lista de todos los caminos(paso, estado) siguientes
-generar_estados_siguientes(_, _, [], []).
-generar_estados_siguientes(Estado_Inicial, Estados_Anteriores, [Paso|Pasos], [Siguiente|Siguientes]) :-
-        aplicar_paso(Estado_Inicial, Paso, Estado_Siguiente),
-        append(Estados_Anteriores, [Paso], Camino_Completo),
-        Siguiente = camino(Camino_Completo, Estado_Siguiente),
-        generar_estados_siguientes(Estado_Inicial, Estados_Anteriores, Pasos, Siguientes),
+% Devuelve una lista de todos los camino(paso, estado) siguientes
+generar_estados_siguientes(_, _, _, [], []).
+generar_estados_siguientes(Estado_A_Cambiar, Estados_Anteriores, Pasos_Anteriores, [Paso|Pasos], [Siguiente|Siguientes]) :-
+        aplicar_paso(Estado_A_Cambiar, Paso, Estado_Siguiente),
+        append(Estados_Anteriores, [Estado_A_Cambiar], Estados_Anteriores2),
+        append(Pasos_Anteriores, [Paso], Pasos_Que_Llevo),
+        Siguiente = camino(Estados_Anteriores2, Pasos_Que_Llevo, Estado_Siguiente),
+        generar_estados_siguientes(Estado_A_Cambiar, Estados_Anteriores, Pasos_Anteriores, Pasos, Siguientes),
         !.
-
-% Aplica un paso (hacer_move o hacer_swap)
-aplicar_paso(Estado_Inicial, move(N), Estado_Final) :-
-        hacer_move(Estado_Inicial, N, Estado_Final).
-aplicar_paso(Estado_Inicial, swap(N,M), Estado_Final) :-
-        hacer_swap(Estado_Inicial, N, M, Estado_Final).
-
 
 % lista_de_moves(N, Lista)
 %
