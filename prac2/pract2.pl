@@ -2,11 +2,106 @@
         lista_de_swaps/2,
         hacer_move/3,
         hacer_swap/4,
-        generar_estados_siguientes/5]).
+        generar_estados_siguientes/5,
+        descartar_caminos/3,
+        son_iguales/2]).
 
 alumno_prode('Sabina', 'Hidalgo', 'Irene', 'v130321').
 alumno_prode('Saito', 'Murata', 'Carlos', 'v130215').
 alumno_prode('Vargas', 'Azpitarte', 'Daniel', 'v130290').
+
+son_iguales(A, B) :-
+        functor(A, regs, Longitud),
+        son_iguales_rec(A,B,Longitud).
+
+son_iguales_rec(_,_,0).
+son_iguales_rec(A,B,I) :-
+        I > 0,
+        arg(I, A, ElementoA),
+        arg(I, B, ElementoB),
+        son_elementos_iguales(ElementoA, ElementoB),
+        I2 is I - 1,
+        son_iguales_rec(A,B, I2).
+
+son_elementos_iguales(X,X).
+son_elementos_iguales(*,_).
+son_elementos_iguales(_,*).
+
+
+descartar_caminos(Caminos, Estado_Final, Caminos_Sin_Descartar) :-
+        descartar_imposibles(Caminos, Estado_Final, CSD1),
+        descartar_ciclos(CSD1, Caminos_Sin_Descartar).
+
+
+descartar_imposibles([], _, []).
+%%% Comentalo tu Irene :D
+descartar_imposibles([Camino|Caminos], Estado_Final, [Camino|Caminos_Sin_Descartar]) :-
+        Camino = camino(_, _, Estado_Actual),
+        contiene(Estado_Actual, Estado_Final),
+        descartar_imposibles(Caminos, Estado_Final, Caminos_Sin_Descartar),
+        !.
+
+descartar_imposibles([_|Caminos], Estado_Final, Caminos_Sin_Descartar) :-
+        descartar_imposibles(Caminos, Estado_Final, Caminos_Sin_Descartar).
+
+descartar_ciclos([], []).
+descartar_ciclos([Camino|Caminos], [Camino|Caminos_Sin_Descartar]) :-
+        Camino = camino(Estados_Anteriores,_,Estado_Actual),
+        descartar_ciclos_rec(Estados_Anteriores, Estado_Actual),
+        descartar_ciclos(Caminos, Caminos_Sin_Descartar),
+        !.
+
+descartar_ciclos([_|Caminos], Caminos_Sin_Descartar) :-
+        descartar_ciclos(Caminos, Caminos_Sin_Descartar).
+
+descartar_ciclos_rec([], _).
+descartar_ciclos_rec([Estado_Anterior|Estados_Anteriores], Estado_Actual) :-
+        no_son_iguales(Estado_Anterior, Estado_Actual),
+        descartar_ciclos_rec(Estados_Anteriores, Estado_Actual).
+
+
+no_son_iguales(Estado_Anterior, Estado_Actual) :-
+        son_iguales(Estado_Anterior, Estado_Actual), !, fail.
+
+no_son_iguales(_,_).
+
+
+contiene(Estado_Actual, Estado_Final) :-
+        functor(Estado_Actual, regs, Longitud),
+        contiene_rec(Estado_Actual, Estado_Final, Longitud),
+        !.
+
+contiene_rec(_,_,0).
+contiene_rec(Estado_Actual, Estado_Final,N) :-
+        N>0,
+        arg(N,Estado_Final,Var_A_Buscar),
+        contiene_var(Estado_Actual, Var_A_Buscar),
+        N1 is N -1,
+        contiene_rec(Estado_Actual, Estado_Final,N1).
+
+contiene_var(Estado_Actual,Var_A_Buscar):-
+        functor(Estado_Actual,regs, Longitud),
+        contiene_var_rec(Estado_Actual,Var_A_Buscar,Longitud).
+
+
+contiene_var_rec(Estado_Actual, Var, N) :-
+        N>0,
+        arg(N,Estado_Actual,Var_A_Comparar),
+        no_son_elementos_iguales(Var_A_Comparar,Var),
+        N1 is N - 1,
+        contiene_var_rec(Estado_Actual,Var,N1).
+
+contiene_var_rec(Estado_Actual, Var, N) :-
+        %        N>0,
+        arg(N,Estado_Actual,Var_A_Comparar),
+        son_elementos_iguales(Var_A_Comparar,Var).
+
+%contiene_var_rec(_,_,_)
+
+no_son_elementos_iguales(X,Y):-
+        son_elementos_iguales(X,Y), !,fail.
+
+no_son_elementos_iguales(_,_).
 
 %generador_de_codigo(Estado_Inicial, Estado_Inicial, []).
 %generador_de_codigo(Estado_Inicial, Estado_Final, Lista_Instrucciones) :-
